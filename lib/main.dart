@@ -1,119 +1,165 @@
+import 'package:aula1/model/Pessoa.dart';
+import 'package:flutter/card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/model/Pessoa.dart';
 
-import 'novajanela.dart';
+
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
+  
+  
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LoginPage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  @override
-  Pagina1 createState() => Pagina1();
-    
-}
-
-class Pagina1 extends State<LoginPage> {
-  final TextEditingController nome = TextEditingController();
-  final TextEditingController senha = TextEditingController();
-  bool _passwordVisible = false;
-
-  void _login(BuildContext context) {
-    String name = nome.text;
-    String password = senha.text;
-
-    if (name.isEmpty || password.isEmpty) {
-      _showSnackBar(context, "Por favor, preencha todos os campos.");
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => WelcomePage(username: name, password: password),
-        ),
-      );
-    }
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
+      title: "Criar Pessoa",
+      home: const TelaInicial(),
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: Colors.grey[100],
       ),
     );
+  }
+}
+
+class TelaInicial extends StatefulWidget {
+  const TelaInicial({super.key});
+
+  @override
+  State<TelaInicial> createState() => _TelaInicialState();
+}
+
+class _TelaInicialState extends State<TelaInicial> {
+  final TextEditingController controllerNome = TextEditingController();
+  final TextEditingController controllerSobrenome = TextEditingController();
+  final TextEditingController controllerIdade = TextEditingController();
+  final TextEditingController controllerCPF = TextEditingController();
+
+  final List<Pessoa> listaP = [];
+
+  void removerPessoa(int index) {
+    setState(() {
+      listaP.removeAt(index);
+    });
+  }
+
+  void adicionarPessoa(String nome, int idade, String sobrenome, String cpf) {
+    setState(() {
+      listaP.add(Pessoa(nome: nome, idade: idade, sobrenome: sobrenome, cpf: cpf));
+    });
+  }
+
+  void abrirModalAdicionarPessoa(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const Text(
+                "Adicionar Pessoa",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.deepPurple),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(controllerNome, "Nome"),
+              _buildTextField(controllerSobrenome, "Sobrenome"),
+              _buildTextField(controllerIdade, "Idade", keyboardType: TextInputType.number, lengthLimit: 2),
+              _buildTextField(controllerCPF, "CPF", keyboardType: TextInputType.number, lengthLimit: 11),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  adicionarPessoa(
+                    controllerNome.text,
+                    int.parse(controllerIdade.text),
+                    controllerSobrenome.text,
+                    controllerCPF.text,
+                  );
+                  _limparCampos();
+                  Navigator.pop(context); // Fechar o modal
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                ),
+                child: const Text("Adicionar Pessoa", style: TextStyle(fontSize: 18, color: Colors.white)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  TextField _buildTextField(
+    TextEditingController controller,
+    String labelText, {
+    TextInputType keyboardType = TextInputType.text,
+    int? lengthLimit,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: const TextStyle(color: Colors.deepPurple),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.deepPurple),
+        ),
+      ),
+      keyboardType: keyboardType,
+    );
+  }
+
+  void _limparCampos() {
+    controllerNome.clear();
+    controllerSobrenome.clear();
+    controllerIdade.clear();
+    controllerCPF.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    final gradient = LinearGradient(
-      colors: [
-        Color.fromARGB(255, 53, 147, 235),
-        Color.fromARGB(255, 3, 80, 153)
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-  );
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text(
+          'Lista de Pessoas',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.deepPurple,
       ),
       body: Container(
-          decoration: BoxDecoration(
-          gradient: gradient,
-        ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('assets/avatar.png'), // Imagem do avatar
+        color: Colors.grey[200],
+        child: Center(
+          child: SizedBox(
+            width: 900,
+            child: ListView.builder(
+              itemCount: listaP.length,
+              itemBuilder: (context, index) {
+                return ClipboardStatusNotifier(
+                  nome: listaP[index].nome,
+                  sobrenome: listaP[index].sobrenome,
+                  idade: listaP[index].idade.toString(),
+                  onRemove: () => removerPessoa(index),
+                  CPF: listaP[index].cpf,
+                );
+              },
             ),
-            SizedBox(height: 20),
-            TextField(
-              controller: nome,
-              decoration: InputDecoration(
-                labelText: 'Nome de usuário',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: senha,
-              obscureText: !_passwordVisible,
-              decoration: InputDecoration(
-                labelText: 'Senha',
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _passwordVisible ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _passwordVisible = !_passwordVisible;
-                    });
-                  },
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _login(context),
-              child: Text('Entrar'),
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => abrirModalAdicionarPessoa(context),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 }
