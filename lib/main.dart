@@ -1,19 +1,13 @@
+import 'package:aula1/card.dart';
 import 'package:aula1/model/Pessoa.dart';
-import 'package:flutter/card.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/model/Pessoa.dart';
-
-
 
 void main() {
   runApp(const MyApp());
-  
-  
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.deepPurple,
         scaffoldBackgroundColor: Colors.grey[100],
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -135,19 +130,20 @@ class _TelaInicialState extends State<TelaInicial> {
         backgroundColor: Colors.deepPurple,
       ),
       body: Container(
-        color: Colors.grey[200],
+        color: const Color.fromARGB(255, 196, 11, 11),
+
         child: Center(
           child: SizedBox(
             width: 900,
             child: ListView.builder(
               itemCount: listaP.length,
               itemBuilder: (context, index) {
-                return ClipboardStatusNotifier(
+                return Cards ( 
                   nome: listaP[index].nome,
                   sobrenome: listaP[index].sobrenome,
                   idade: listaP[index].idade.toString(),
-                  onRemove: () => removerPessoa(index),
                   CPF: listaP[index].cpf,
+                  onRemove: () => removerPessoa(index),
                 );
               },
             ),
